@@ -11,4 +11,6 @@ use App\Http\Controllers\Auth\LoginController;
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
 
-Route::prefix('v1')->middleware('auth:sanctum')->group(function () {});
+Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
+    Route::get('/user/{id}', [UserController::class, 'get']);
+});

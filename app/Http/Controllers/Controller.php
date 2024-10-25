@@ -11,7 +11,7 @@ abstract class Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function sendResponse($result, $message): Response
+    public function sendResponse($result, ?string $message = ''): Response
     {
         $response = [
             'success' => true,

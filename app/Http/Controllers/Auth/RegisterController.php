@@ -28,11 +28,11 @@ class RegisterController extends Controller
         ]);
 
         $token =  $user->createToken(Str::uuid())->plainTextToken;
-        $name =  $user->name;
+        $user->save();
 
         $success = [
             'token' => $token,
-            'name' => $name,
+            ...$user->toArray()
         ];
 
         return $this->sendResponse($success, 'User registered successfully');
