@@ -40,4 +40,8 @@ class UpdateOrCreateFieldConfig
     {
         return $this->fieldConfig->isNullable();
     }
+
+    public function getDefault(){
+        return $this->fieldConfig->getDefaultValue();
+    }
 }

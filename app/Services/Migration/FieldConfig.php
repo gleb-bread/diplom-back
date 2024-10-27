@@ -8,6 +8,7 @@ class FieldConfig
     private string $type;
     private bool $nullable;
     private int | null $length;
+    private $default;
 
 
     /**
@@ -16,6 +17,7 @@ class FieldConfig
      *     type: FieldType,
      *     nullable?: bool,
      *     length?: int,
+     *     default?: any,
      * } $config
      */
 
@@ -25,6 +27,7 @@ class FieldConfig
         $this->type = $config['type'];
         $this->nullable = $config['nullable'] ?? false;
         $this->length = $config['length'] ?? null;
+        $this->default = $config['default'] ?? null;
     }
 
     public function getField(): string
@@ -45,5 +48,9 @@ class FieldConfig
     public function getLength(): int | null
     {
         return $this->length;
+    }
+
+    public function getDefaultValue(){
+        return $this->default;
     }
 }

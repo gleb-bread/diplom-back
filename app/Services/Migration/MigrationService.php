@@ -97,12 +97,13 @@ class MigrationService
         $table = $config->getTable();
         $field = $config->getField();
         $type = $config->getType();
+        $default = $config->getDefault();
 
         switch ($type) {
             case 'string':
                 return $table->string($field, $length);
             case 'boolean':
-                return $table->boolean($field)->default(true);
+                return $table->boolean($field)->default($default ?? true);
             case 'integer':
                 return $table->integer($field);
             case 'char':

@@ -6,6 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Controllers\LogController;
+use Exception;
 
 class LogRequest
 {
@@ -16,18 +17,25 @@ class LogRequest
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $startTime = microtime(true);
 
-        $response = $next($request);
+        $response = null;
 
-        $endTime = microtime(true);
+        try{
+            $startTime = microtime(true);
 
-        $executionTime = $endTime - $startTime;
+            $response = $next($request);
 
-        $controller = new LogController();
+            $endTime = microtime(true);
 
-        $controller->add($request, $response, $executionTime);
+            $executionTime = $endTime - $startTime;
 
-        return $response;
+            $controller = new LogController();
+
+            $controller->add($request, $response, $executionTime);
+
+            return $response;
+        } catch(Exception $e){
+            return $response;
+        }
     }
 }

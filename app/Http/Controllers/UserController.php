@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller {
     public function get(int $id){
-        $user = User::get($id);
+        $user = User::find($id);
         $success = $user;
         return $this->sendResponse($success);
     }
