@@ -2,16 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\PostUser;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Http\Controllers\TokenController;
-use Illuminate\Support\Facades\Hash;
+
 
 class UserController extends Controller {
     public function get(int $id){
         $user = User::find($id);
         $success = $user;
         return $this->sendResponse($success);
+    }
+
+    public function getUserProjects(Request $request) {
+        // Получаем текущего аутентифицированного пользователя
+        $user = Auth::user();
+
+        // Получаем проекты пользователя
+        $projects =  $user->projects;
+
+        return $this->sendResponse($projects);
     }
 }

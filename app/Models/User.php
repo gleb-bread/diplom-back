@@ -6,7 +6,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
 
 /**
@@ -22,6 +22,7 @@ use Illuminate\Support\Carbon;
  * @property bool $delayed
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection|Project[] $projects
  *
  * @method static Builder|User newModelQuery()
  * @method static Builder|User newQuery()
@@ -45,11 +46,6 @@ class User extends Authenticatable
 
     protected $table = 'users';
 
-    /**
-     * Атрибуты модели по умолчанию.
-     *
-     * @var array
-     */
     protected $attributes = [
         'name'        => null,
         'second_name' => null,
@@ -57,11 +53,6 @@ class User extends Authenticatable
         'delayed'     => true,
     ];
 
-    /**
-     * Поля, которые могут быть массово назначаемы.
-     *
-     * @var array
-     */
     protected $fillable = [
         'login',
         'name',
@@ -72,21 +63,11 @@ class User extends Authenticatable
         'delayed',
     ];
 
-    /**
-     * Поля, которые должны быть скрыты для массивов.
-     *
-     * @var array
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Поля, которые должны быть приведены к nативным типам.
-     *
-     * @var array
-     */
     protected $casts = [
         'delayed'     => 'boolean',
         'created_at'  => 'datetime',
@@ -94,20 +75,20 @@ class User extends Authenticatable
     ];
 
     /**
-     * Получить полное имя пользователя (name + second_name).
+     * Связь один ко многим с моделью Project.
      *
-     * @return string
+     * @return HasMany
      */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return $this->name . ' ' . $this->second_name;
     }
 
-    /**
-     * Установить хэш пароля.
-     *
-     * @param string $password
-     */
     public function setPasswordAttribute(string $password): void
     {
         $this->attributes['password'] = bcrypt($password);
