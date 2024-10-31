@@ -19,7 +19,6 @@ class PageController extends Controller
         // Получаем компоненты для указанной страницы в обратном порядке
         $pageComponents = PageComponent::where('page_id', $pageId)
             ->orderBy('created_at', 'desc')
-            ->with('component') // Загрузка связанных компонентов
             ->get();
 
         // Преобразуем компоненты в массив с данными

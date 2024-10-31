@@ -32,12 +32,17 @@ class RegisterController extends Controller
         $user->save();
 
         $project = $this->createFirstProject($user);
-        $page = $this->createFirstPage($project); // Создание первой страницы
+        $page = $this->createFirstPage($project);
         $this->createFirstTextComponent($page);
 
         $success = [
-            'token' => $token,
-            ...$user->toArray()
+            'user' => [
+                'token' => $token,
+                ...$user->toArray()
+            ],
+
+            'project' => $project,
+            'page' => $page
         ];
 
         return $this->sendResponse($success, 'User registered successfully');

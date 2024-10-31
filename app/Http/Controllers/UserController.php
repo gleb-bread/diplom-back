@@ -8,13 +8,13 @@ use App\Models\User;
 
 
 class UserController extends Controller {
-    public function get(int $id){
-        $user = User::find($id);
+    public function get(){
+        $user = Auth::user();
         $success = $user;
         return $this->sendResponse($success);
     }
 
-    public function getUserProjects(Request $request) {
+    public function getUserProjects() {
         // Получаем текущего аутентифицированного пользователя
         $user = Auth::user();
 

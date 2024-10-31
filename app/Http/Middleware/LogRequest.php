@@ -25,6 +25,8 @@ class LogRequest
 
             $response = $next($request);
 
+            return $response;
+
             $endTime = microtime(true);
 
             $executionTime = $endTime - $startTime;

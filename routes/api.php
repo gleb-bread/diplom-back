@@ -14,10 +14,10 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
 
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
-    Route::get('/user/{id}', [UserController::class, 'get']);
-    Route::post('/projects', [ProjectController::class, 'createProject']);
-    Route::get('/projects/{projectId}/pages', [ProjectController::class, 'getPages']);
-    Route::get('/user/projects', [UserController::class, 'getUserProjects']);
+    Route::get('/user', [UserController::class, 'get']);
+    Route::post('/project', [ProjectController::class, 'createProject']);
+    Route::get('/project/{projectId}/pages', [ProjectController::class, 'getPages']);
+    Route::get('/user/project', [UserController::class, 'getUserProjects']);
     Route::get('/pages/{pageId}/components', [PageController::class, 'getComponents']);
 });
 
