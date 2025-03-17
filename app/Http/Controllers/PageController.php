@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\PageComponent;
 use App\Models\TextComponent;
+use App\Services\Component\ComponentType;
+use App\Http\Controllers\TextComponentController;
 
 class PageController extends Controller
 {
@@ -18,7 +20,7 @@ class PageController extends Controller
     {
         // Получаем компоненты для указанной страницы в обратном порядке
         $pageComponents = PageComponent::where('page_id', $pageId)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'asc')
             ->get();
 
         // Преобразуем компоненты в массив с данными
@@ -47,5 +49,32 @@ class PageController extends Controller
         });
 
         return $this->sendResponse($components);
+    }
+
+    public function createComponent(Request $request)
+    {
+        $data = $request->validate([
+            'id' => 'required|integer',
+            'page_id' => 'required|integer|exists:pages,id',
+        ]);
+
+        $type = ComponentType::getTypeByRequest($request);
+
+        // Проверяем, существует ли компонент в базе
+        if ($data['id'] > 0) return $this->sendError('Component exist', [], 400);
+
+        switch($type){
+            case TextComponent::$type: {
+                $component = TextComponentController::create($request);
+                if(!$component) return $this->sendError('Error at created component', [], 500);
+                break;
+            }
+
+            default: {
+                return $this->sendError('Undefined component', [], 400);
+            }
+        }
+
+        return $this->sendResponse($component);
     }
 }

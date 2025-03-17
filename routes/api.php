@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ProjectController; 
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\PageComponentController;
 
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/login', [LoginController::class, 'login']);
@@ -19,5 +20,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('/project/{projectId}/pages', [ProjectController::class, 'getPages']);
     Route::get('/user/project', [UserController::class, 'getUserProjects']);
     Route::get('/pages/{pageId}/components', [PageController::class, 'getComponents']);
+    Route::post('/pages/component', [PageController::class, 'createComponent']);
+    Route::patch('/component/{componentId}', [PageComponentController::class, 'update']);
 });
 

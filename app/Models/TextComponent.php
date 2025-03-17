@@ -31,6 +31,9 @@ class TextComponent extends Model
 {
     protected $table = 'text_components';
 
+    static $typeFields = ['text'];
+    static $type = 'text';
+
     /**
      * Поля, которые могут быть массово назначаемы.
      *
