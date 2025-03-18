@@ -33,16 +33,20 @@ class PageController extends Controller
 
             // Загружаем данные соответствующего компонента в зависимости от типа
             switch ($pageComponent->type) {
-                case 'text':
+                case 'text':{
                     $textComponent = TextComponent::find($pageComponent->component_id);
                     $componentData['text'] = $textComponent ? $textComponent->text : null;
+                    $componentData['created_at'] = $textComponent ? $textComponent->created_at : null;
+                    $componentData['updated_at'] = $textComponent ? $textComponent->updated_at : null;
                     break;
+                }
 
                 // Добавьте другие типы компонентов здесь, если нужно
 
-                default:
+                default: {
                     $componentData['data'] = null;
                     break;
+                }
             }
 
             return $componentData;

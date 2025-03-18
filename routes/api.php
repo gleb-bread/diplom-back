@@ -21,6 +21,6 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('/user/project', [UserController::class, 'getUserProjects']);
     Route::get('/pages/{pageId}/components', [PageController::class, 'getComponents']);
     Route::post('/pages/component', [PageController::class, 'createComponent']);
-    Route::patch('/component/{componentId}', [PageComponentController::class, 'update']);
+    Route::patch('/component', [PageComponentController::class, 'update']);
 });
 
