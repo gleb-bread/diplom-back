@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $user_id
  * @property string $hash
  * @property string $name
+ * @property int $folder_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  *
@@ -52,7 +53,8 @@ class Page extends Model
         'user_id',
         'hash',
         'name',
-        'project_id'
+        'project_id',
+        'folder_id'
     ];
 
     /**

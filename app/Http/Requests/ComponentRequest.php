@@ -16,8 +16,8 @@ class ComponentRequest extends FormRequest
         return [
             'id' => 'required|integer',
             'page_id' => 'required|integer',
-            'type' => 'required|string|in:text,image,video', // Список типов можно расширять
-            'component_id' => 'nullable|integer', // Добавляем для совместимости
+            'type' => 'required|string',
+            'component_id' => 'nullable|integer',
         ];
     }
 
@@ -27,7 +27,6 @@ class ComponentRequest extends FormRequest
             'id.required' => 'Поле id обязательно.',
             'page_id.required' => 'Поле page_id обязательно.',
             'type.required' => 'Поле type обязательно.',
-            'type.in' => 'Поле type должно быть одним из: text, image, video.',
         ];
     }
 }
