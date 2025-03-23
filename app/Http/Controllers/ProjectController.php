@@ -38,12 +38,66 @@ class ProjectController extends Controller
         return $this->sendResponse($project);
     }
 
-    public function getPages(int $projectId)
+    public function getStructure(int $projectId)
     {
-        $project = Project::findOrFail($projectId); // Находим проект по ID
-        $pages = $project->pages; // Получаем связанные страницы
+        // Получаем все папки и страницы верхнего уровня (без parent_id или folder_id)
+        $topLevelFolders = Folder::where('project_id', $projectId)
+            ->whereNull('parent_id')
+            ->get();
+        $topLevelPages = Page::where('project_id', $projectId)
+            ->whereNull('folder_id')
+            ->get();
 
-        return $this->sendResponse($pages);
+        // Функция для рекурсивного построения структуры папок
+        $buildFolderStructure = function (Folder $folder) use (&$buildFolderStructure) {
+            $items = [];
+
+            // Добавляем вложенные страницы
+            $pages = $folder->pages;
+            foreach ($pages as $page) {
+                $pageData = $page->toArray();
+                $pageData['type'] = 'page';
+                $items[] = $pageData;
+            }
+
+            // Добавляем вложенные папки
+            $subFolders = $folder->children;
+            foreach ($subFolders as $subFolder) {
+
+                $folderData = $subFolder->toArray();
+
+                $folderData['type'] = 'folder';
+
+                $folderData['items'] = $buildFolderStructure($subFolder);
+
+                $items[] = $folderData;
+            }
+
+            return $items;
+        };
+
+        // Собираем итоговый результат
+        $result = [];
+
+        // Добавляем верхние папки
+        foreach ($topLevelFolders as $folder) {
+            $folderData = $folder->toArray();
+            $folderData['type'] = 'folder';
+            $folderData['items'] = $buildFolderStructure($folder);
+
+            $result[] = $folderData;
+        }
+
+        // Добавляем верхние страницы
+        foreach ($topLevelPages as $page) {
+
+            $pageData = $page->toArray();
+            $pageData['type'] = 'page';
+
+            $result[] = $pageData;
+        }
+
+        return $this->sendResponse($result);
     }
 
     /**
@@ -100,6 +154,14 @@ class ProjectController extends Controller
                 return $this->sendError('Недопустимый тип элемента. Используйте "page" или "folder"', 400);
         }
 
+        $element->type = $type;
+
         return $this->sendResponse($element, 'Элемент успешно создан', 201);
+    }
+
+    public function getProject(Request $request, int $projectId){
+        $project = Project::find($projectId);
+
+        return $this->sendResponse($project);
     }
 }

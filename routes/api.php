@@ -17,7 +17,8 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'get']);
     Route::post('/project', [ProjectController::class, 'createProject']);
-    Route::get('/project/{projectId}/pages', [ProjectController::class, 'getPages']);
+    Route::get('/project/{projectId}/structure', [ProjectController::class, 'getStructure']);
+    Route::get('/project/{projectId}', [ProjectController::class, 'getProject']);
     Route::get('/user/project', [UserController::class, 'getUserProjects']);
     Route::get('/pages/{pageId}/components', [PageController::class, 'getComponents']);
     Route::post('/pages/component', [PageController::class, 'createComponent']);

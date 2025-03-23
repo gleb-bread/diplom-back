@@ -70,7 +70,7 @@ class RegisterController extends Controller
             'private' => true, 
             'archive' => false,
             'hash' => Str::random(64),
-            'type' => null,
+            'type' => 'page',
             'project_id' => $project->id, // Связь с проектом
         ]);
     }
