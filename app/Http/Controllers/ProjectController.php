@@ -155,13 +155,204 @@ class ProjectController extends Controller
         }
 
         $element->type = $type;
+        $element->items = [];
 
         return $this->sendResponse($element, 'Элемент успешно создан', 201);
+    }
+
+    /**
+     * Обновить существующий проект.
+     *
+     * @param Request $request
+     * @param int $projectId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateElement(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'string|max:255',
+            'type' => 'required|string',
+            'project_id' => 'required|integer|exists:projects,id',
+            'id' => 'required|integer'
+        ]);
+
+
+        $project = Project::find($data['project_id']);
+
+        if (!$project) {
+            return $this->sendError('Проект с указанным ID не найден', 404);
+        }
+
+        // Проверяем, имеет ли пользователь право редактировать проект
+        if ($project->user_id !== Auth::id()) {
+            return $this->sendError('У вас нет прав для редактирования этого проекта', 403);
+        }
+
+        // Создаем элемент в зависимости от типа
+        switch ($data['type']) {
+            case 'page':{
+
+                $element = Page::find($data['id']);
+
+                if(!$element){
+                    return $this->sendError('Page с указанным ID не найден', 404);
+                }
+
+                $element->update([
+                    'name' => $data['name'],
+                ]);
+
+                break;
+            }
+
+            case 'folder': {
+                $element = Folder::find($data['id']);
+
+                if(!$element){
+                    return $this->sendError('Folder с указанным ID не найден', 404);
+                }
+
+                $element->update([
+                    'name' => $data['name'],
+                ]);
+
+                break;
+            }
+
+            default:
+                return $this->sendError('Недопустимый тип элемента. Используйте "page" или "folder"', 400);
+        }
+
+        $element->refresh();
+
+        return $this->sendResponse($element, 'Элемент успешно обновлен');
+    }
+
+    /**
+     * Удалить существующий элемент (страницу или папку) в проекте.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteElement(Request $request)
+    {
+        $data = $request->validate([
+            'type' => 'required|string',
+            'project_id' => 'required|integer|exists:projects,id',
+            'id' => 'required|integer'
+        ]);
+
+        $project = Project::find($data['project_id']);
+
+        if (!$project) {
+            return $this->sendError('Проект с указанным ID не найден', 404);
+        }
+
+        // Проверяем, имеет ли пользователь право удалять элементы в проекте
+        if ($project->user_id !== Auth::id()) {
+            return $this->sendError('У вас нет прав для удаления элементов в этом проекте', 403);
+        }
+
+        // Удаляем элемент в зависимости от типа
+        switch ($data['type']) {
+            case 'page':
+                $element = Page::find($data['id']);
+
+                if (!$element) {
+                    return $this->sendError('Page с указанным ID не найден', 404);
+                }
+
+                $element->delete();
+                break;
+
+            case 'folder':
+                $element = Folder::find($data['id']);
+
+                if (!$element) {
+                    return $this->sendError('Folder с указанным ID не найден', 404);
+                }
+
+                $element->pages()->delete();
+                $element->children()->delete();
+
+                $element->delete();
+                break;
+
+            default:
+                return $this->sendError('Недопустимый тип элемента. Используйте "page" или "folder"', 400);
+        }
+
+        return $this->sendResponse(null, 'Элемент успешно удален', 204);
     }
 
     public function getProject(Request $request, int $projectId){
         $project = Project::find($projectId);
 
         return $this->sendResponse($project);
+    }
+
+    /**
+     * Получить список проектов пользователя.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUserProjects(Request $request)
+    {
+        // Получаем user_id из запроса или от аутентифицированного пользователя
+        $userId = $request->input('user_id', Auth::id());
+
+        if (!$userId) {
+            return $this->sendError('Пользователь не аутентифицирован и user_id не указан', 401);
+        }
+
+        // Запрашиваем проекты, принадлежащие пользователю
+        $projects = Project::where('user_id', $userId)->where('archive', false)->get();
+
+        // Если проектов нет, можно вернуть пустой массив или сообщение
+        if ($projects->isEmpty()) {
+            return $this->sendResponse([], 'У пользователя пока нет проектов');
+        }
+
+        return $this->sendResponse($projects, 'Список проектов успешно получен');
+    }
+
+    /**
+ * Обновить существующий проект.
+    *
+    * @param Request $request
+    * @param int $projectId
+    * @return \Illuminate\Http\JsonResponse
+    */
+    public function updateProject(Request $request, int $projectId)
+    {
+        // Находим проект по ID
+        $project = Project::find($projectId);
+
+        if (!$project) {
+            return $this->sendError('Проект с указанным ID не найден', 404);
+        }
+
+        // Проверяем, имеет ли пользователь право редактировать проект
+        if ($project->user_id !== Auth::id()) {
+            return $this->sendError('У вас нет прав для редактирования этого проекта', 403);
+        }
+
+        // Валидация данных
+        $data = $request->validate([
+            'name' => 'sometimes|string|max:64',
+            'private' => 'sometimes|boolean',
+            'archive' => 'sometimes|boolean',
+            'logo' => 'nullable|string',
+            'type' => 'nullable|string|max:100',
+        ]);
+
+        // Обновляем только переданные поля
+        $project->update($data);
+
+        // Обновляем модель из базы данных
+        $project->refresh();
+
+        return $this->sendResponse($project, 'Проект успешно обновлен');
     }
 }
