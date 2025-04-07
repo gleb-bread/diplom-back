@@ -62,11 +62,11 @@ function handleRequest(apiRequest) {
     const config = {
         method: method.toLowerCase(),  // Преобразуем метод в нижний регистр
         url: url,
-        headers: headers ? JSON.parse(headers) : {},
-        params: params ? JSON.parse(params) : {},
+        headers: headers ? headers : {},
+        params: params ? params : {},
         timeout: 10000,
         withCredentials: cookies ? true : false,
-        data: method.toLowerCase() === 'post' ? (params ? JSON.parse(params) : {}) : undefined,
+        data: method.toLowerCase() === 'post' ? (params ? params : {}) : undefined,
     };
 
     // Отправка запроса через axios

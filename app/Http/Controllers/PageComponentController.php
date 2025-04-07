@@ -13,6 +13,7 @@ use App\Models\ApiComponentCookie;
 use App\Models\ApiComponentParam;
 use App\Models\ApiComponentHeader;
 use App\Http\Requests\UpdateApiComponentDataRequest;
+use App\Models\ApiRequest;
 
 class PageComponentController extends Controller
 {
@@ -181,5 +182,36 @@ class PageComponentController extends Controller
         }
 
         return $this->sendResponse(null, 'Parameter deleted successfully', 200);
+    }
+
+    public function testApiComponent($id){
+        // Загружаем ApiComponent с связанными данными
+        $apiComponent = ApiComponents::with(['params', 'cookies', 'headers'])->find($id);
+
+        if (!$apiComponent) {
+            return $this->sendError('API Component not found!', [], 404);
+        }
+
+        // Преобразуем связанные данные в формат для ApiComponentRequest
+        $params = $apiComponent->params->pluck('value', 'key')->all();
+        $cookies = $apiComponent->cookies->pluck('value', 'key')->all();
+        $headers = $apiComponent->headers->pluck('value', 'key')->all();
+
+        // Предполагаем, что в ApiComponents есть поля url и method
+        // Если их нет, нужно будет добавить или указать источник этих данных
+        $apiRequest = ApiRequest::create([
+            'url' => $apiComponent->url, // Убедитесь, что это поле существует в модели
+            'method' => $apiComponent->method, // Убедитесь, что это поле существует в модели
+            'headers' => json_encode($headers ?: []),
+            'cookies' =>  json_encode($cookies ?: []),
+            'params' =>  json_encode($params ?: []),
+            'status' => 'pending',
+        ]);
+
+        return $this->sendResponse(
+            $apiRequest,
+            'API component test request queued successfully',
+            200
+        );
     }
 }
