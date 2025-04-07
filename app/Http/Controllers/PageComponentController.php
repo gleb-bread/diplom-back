@@ -204,6 +204,7 @@ class PageComponentController extends Controller
             'method' => $apiComponent->method, // Убедитесь, что это поле существует в модели
             'headers' => json_encode($headers ?: []),
             'cookies' =>  json_encode($cookies ?: []),
+            'api_component_id' => $id,
             'params' =>  json_encode($params ?: []),
             'status' => 'pending',
         ]);

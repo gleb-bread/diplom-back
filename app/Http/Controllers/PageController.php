@@ -12,6 +12,7 @@ use App\Http\Controllers\ApiComponentController;
 use App\Models\ApiComponentParam;
 use App\Models\ApiComponentCookie;
 use App\Models\ApiComponentHeader;
+use App\Models\ApiRequest;
 
 class PageController extends Controller
 {
@@ -62,7 +63,17 @@ class PageController extends Controller
 
                     $apiComponentArray = $apiComponent ? $apiComponent->toArray() : [];
 
-                    $componentData = array_merge($componentData, $apiComponentArray);
+                    // Получаем последнюю запись из ApiComponentRequest
+                    $latestRequest = ApiRequest::where('api_component_id', $pageComponent->component_id)
+                        ->orderBy('created_at', 'desc')
+                        ->first();
+
+                    // Добавляем status и response из последней записи
+                    $componentData = array_merge($componentData, $apiComponentArray, [
+                        'status' => $latestRequest ? $latestRequest->status : null,
+                        'response' => $latestRequest ? $latestRequest->response : null,
+                        'component_id' => $pageComponent->id,
+                    ]);
                     $componentData['component_id'] = $pageComponent->id;
                     break;
                 }
@@ -103,8 +114,25 @@ class PageController extends Controller
 
             case ApiComponents::$type: {  // Новый кейс для API компонента
                 $component = ApiComponentController::create($request);
-                if(!$component) return $this->sendError('Error at created API component', [], 500);
-                break;
+                if (!$component) return $this->sendError('Error at created API component', [], 500);
+
+                // Получаем созданный ApiComponents из ответа контроллера
+                $apiComponentId = $component->id ?? $component['id']; // Зависит от структуры ответа ApiComponentController
+
+                // Получаем последнюю запись из ApiComponentRequest
+                $latestRequest = ApiRequest::where('api_component_id', $apiComponentId)
+                    ->orderBy('created_at', 'desc')
+                    ->first();
+
+                // Добавляем status и response к возвращаемым данным
+                $componentData = $component instanceof \Illuminate\Http\JsonResponse
+                    ? $component->getData(true) // Если контроллер возвращает JsonResponse
+                    : $component->toArray();    // Если возвращает модель
+
+                $componentData['status'] = $latestRequest ? $latestRequest->status : null;
+                $componentData['response'] = $latestRequest ? $latestRequest->response : null;
+
+                return $this->sendResponse($componentData);
             }
     
 

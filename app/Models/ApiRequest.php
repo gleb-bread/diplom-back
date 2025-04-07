@@ -18,6 +18,7 @@ class ApiRequest extends Model
         'cookies',
         'params',
         'status',
+        'api_component_id',
         'response',
     ];
 }
