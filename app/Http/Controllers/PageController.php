@@ -9,6 +9,9 @@ use App\Services\Component\ComponentType;
 use App\Http\Controllers\TextComponentController;
 use App\Models\ApiComponents;
 use App\Http\Controllers\ApiComponentController;
+use App\Models\ApiComponentParam;
+use App\Models\ApiComponentCookie;
+use App\Models\ApiComponentHeader;
 
 class PageController extends Controller
 {
@@ -45,7 +48,17 @@ class PageController extends Controller
                 }
 
                 case ApiComponents::$type: {
-                    $apiComponent = ApiComponents::with(['params', 'cookies', 'headers'])->find($pageComponent->component_id);
+                    $apiComponent = ApiComponents::with([
+                        'params' => function ($query) {
+                            $query->select('id', 'api_component_id', 'key', 'value')->selectRaw("'" . ApiComponentParam::$type . "' as type");
+                        },
+                        'cookies' => function ($query) {
+                            $query->select('id', 'api_component_id', 'key', 'value')->selectRaw("'" . ApiComponentCookie::$type . "' as type");
+                        },
+                        'headers' => function ($query) {
+                            $query->select('id', 'api_component_id', 'key', 'value')->selectRaw("'" . ApiComponentHeader::$type . "' as type");
+                        }
+                    ])->find($pageComponent->component_id);
 
                     $apiComponentArray = $apiComponent ? $apiComponent->toArray() : [];
 

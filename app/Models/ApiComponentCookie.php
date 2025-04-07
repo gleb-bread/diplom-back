@@ -11,6 +11,7 @@ class ApiComponentCookie extends Model
 
     // Указываем таблицу, если имя модели не соответствует имени таблицы
     protected $table = 'api_component_cookies';
+    static $type = 'cookie';
 
     // Указываем поля, которые могут быть массово назначены
     protected $fillable = [

@@ -11,6 +11,7 @@ class ApiComponentHeader extends Model
 
     // Указываем таблицу, если имя модели не соответствует имени таблицы
     protected $table = 'api_component_headers';
+    static $type = 'header';
 
     // Указываем поля, которые могут быть массово назначены
     protected $fillable = [

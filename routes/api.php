@@ -28,5 +28,8 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('/project/element', [ProjectController::class, 'createElement']);
     Route::delete('/project/element', [ProjectController::class, 'deleteElement']);
     Route::patch('/project/element', [ProjectController::class, 'updateElement']);
+    Route::post('/component/api-component/{type}', [PageComponentController::class, 'createApiComponentData']);
+    Route::patch('/component/api-component/{type}/{id}', [PageComponentController::class, 'updateApiComponentData']);
+    Route::delete('/component/api-component/{type}/{id}', [PageComponentController::class, 'deleteApiComponentData']);
 });
 

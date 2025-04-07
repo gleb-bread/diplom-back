@@ -12,7 +12,7 @@ class ApiComponentRequest extends ComponentRequest
         // Добавляем или модифицируем правила для полей API компонента
         $newRules = [
             'name' => 'nullable|string|max:255', // Название компонента (необязательно, строка)
-            'method' => 'nullable|string|in:GET,POST,PUT,DELETE', // Метод запроса (необязательно, одна из допустимых строк)
+            'method' => 'nullable|string|in:GET,POST,PUT,DELETE,PATCH,HEAD,OPTIONS', // Метод запроса (необязательно, одна из допустимых строк)
             'url' => 'nullable|string|url', // URL (необязательно, строка в формате URL)
         ];
 
@@ -31,7 +31,7 @@ class ApiComponentRequest extends ComponentRequest
             'name.max' => 'Поле name не может превышать 255 символов.',
             'method.nullable' => 'Поле method может быть пустым.',
             'method.string' => 'Поле method должно быть строкой.',
-            'method.in' => 'Поле method должно быть одним из: GET, POST, PUT, DELETE.',
+            'method.in' => 'Поле method должно быть одним из: GET, POST, PUT, DELETE,PATCH,HEAD,OPTIONS.',
             'url.nullable' => 'Поле url может быть пустым.',
             'url.string' => 'Поле url должно быть строкой.',
             'url.url' => 'Поле url должно содержать правильный URL.',

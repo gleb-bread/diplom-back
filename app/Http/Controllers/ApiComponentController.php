@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class ApiComponentController extends Controller
 {
-    public function update(Request $request)
+    public function update(ComponentRequest $request)
     {
         $validated = $this->validateRequest($request);
 
@@ -31,7 +31,9 @@ class ApiComponentController extends Controller
             'url' => $validated['url'] ?? null,
         ]);
 
-        return response()->json($apiComponent);
+        $apiComponent->refresh();
+
+        return $apiComponent;
     }
 
     public function get(Request $request)
@@ -45,7 +47,7 @@ class ApiComponentController extends Controller
             return $this->sendError('API Component not found!', [], 404);
         }
 
-        return response()->json($apiComponent);
+        return $apiComponent;
     }
 
     public static function create(Request $request): ?ApiComponents
