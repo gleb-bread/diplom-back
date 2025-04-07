@@ -7,6 +7,8 @@ use App\Models\PageComponent;
 use App\Models\TextComponent;
 use App\Services\Component\ComponentType;
 use App\Http\Controllers\TextComponentController;
+use App\Models\ApiComponents;
+use App\Http\Controllers\ApiComponentController;
 
 class PageController extends Controller
 {
@@ -33,11 +35,22 @@ class PageController extends Controller
 
             // Загружаем данные соответствующего компонента в зависимости от типа
             switch ($pageComponent->type) {
-                case 'text':{
+                case TextComponent::$type:{
                     $textComponent = TextComponent::find($pageComponent->component_id);
                     $componentData['text'] = $textComponent ? $textComponent->text : null;
                     $componentData['created_at'] = $textComponent ? $textComponent->created_at : null;
                     $componentData['updated_at'] = $textComponent ? $textComponent->updated_at : null;
+                    $componentData['component_id'] = $pageComponent->id;
+                    break;
+                }
+
+                case ApiComponents::$type: {
+                    $apiComponent = ApiComponents::with(['params', 'cookies', 'headers'])->find($pageComponent->component_id);
+
+                    $apiComponentArray = $apiComponent ? $apiComponent->toArray() : [];
+
+                    $componentData = array_merge($componentData, $apiComponentArray);
+                    $componentData['component_id'] = $pageComponent->id;
                     break;
                 }
 
@@ -60,9 +73,10 @@ class PageController extends Controller
         $data = $request->validate([
             'id' => 'required|integer',
             'page_id' => 'required|integer|exists:pages,id',
+            'type' => 'required|string'
         ]);
 
-        $type = ComponentType::getTypeByRequest($request);
+        $type = $data['type'];
 
         // Проверяем, существует ли компонент в базе
         if ($data['id'] > 0) return $this->sendError('Component exist', [], 400);
@@ -73,6 +87,13 @@ class PageController extends Controller
                 if(!$component) return $this->sendError('Error at created component', [], 500);
                 break;
             }
+
+            case ApiComponents::$type: {  // Новый кейс для API компонента
+                $component = ApiComponentController::create($request);
+                if(!$component) return $this->sendError('Error at created API component', [], 500);
+                break;
+            }
+    
 
             default: {
                 return $this->sendError('Undefined component', [], 400);

@@ -4,6 +4,7 @@ namespace App\Services\Component;
 
 use Illuminate\Http\Request;
 use App\Models\TextComponent;
+use App\Models\ApiComponents;
 
 class ComponentType {
 
@@ -18,6 +19,7 @@ class ComponentType {
         // Карта типов компонентов с их уникальными полями
         $componentMap = [
             TextComponent::$type => TextComponent::$typeFields,
+            ApiComponents::$type => ApiComponents::$typeFields,
         ];
 
         // Получаем поля из запроса

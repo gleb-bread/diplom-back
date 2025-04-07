@@ -12,11 +12,13 @@ class TextComponentObserver
      */
     public function created(TextComponent $textComponent): void
     {
-        PageComponent::create([
+        $pageComponent = PageComponent::create([
             'page_id' => $textComponent->page_id,
             'component_id' => $textComponent->id,
             'type' => 'text', // Или любой другой тип, который вам нужен
         ]);
+
+        $textComponent->component_id = $pageComponent->id;
     }
 
     /**
@@ -24,7 +26,16 @@ class TextComponentObserver
      */
     public function updated(TextComponent $textComponent): void
     {
-        //
+        $pageComponent = PageComponent::where([
+            ['page_id', '=', $textComponent->page_id],
+            ['component_id', '=', $textComponent->id],
+            ['type', '=', 'text'],
+        ])->first();
+    
+        if ($pageComponent) {
+            // Привязываем временное свойство (не сохранится в БД, но доступно после update)
+            $textComponent->component_id = $pageComponent->id;
+        }
     }
 
     /**
