@@ -9,6 +9,9 @@ use App\Http\Requests\CreateNewComponentProjectRequest;
 use App\Models\Page;
 use App\Models\Folder;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\ProjectRightsController;
+use App\Enums\ProjectRightEnum;
+use App\Services\ProjectRights\ProjectRightsService;
 
 
 class ProjectController extends Controller
@@ -35,70 +38,80 @@ class ProjectController extends Controller
             'ref' => Str::random(64),
         ]));
 
+        $user = Auth::user();
+
+        ProjectRightsController::createRightAtProject($user, $project, ProjectRightEnum::Admin);
+
         return $this->sendResponse($project);
     }
 
     public function getStructure(int $projectId)
-    {
-        // Получаем все папки и страницы верхнего уровня (без parent_id или folder_id)
-        $topLevelFolders = Folder::where('project_id', $projectId)
-            ->whereNull('parent_id')
-            ->get();
-        $topLevelPages = Page::where('project_id', $projectId)
-            ->whereNull('folder_id')
-            ->get();
+        {
+            $user = Auth::user();
+            $project = Project::find($projectId);
 
-        // Функция для рекурсивного построения структуры папок
-        $buildFolderStructure = function (Folder $folder) use (&$buildFolderStructure) {
-            $items = [];
+            if (!$project) {
+                return $this->sendError('Проект не найден', 404);
+            }
 
-            // Добавляем вложенные страницы
-            $pages = $folder->pages;
-            foreach ($pages as $page) {
+            // Проверка на право просмотра проекта
+            if (!ProjectRightsService::hasPermissionShowProject($user, $project)) {
+                return $this->sendError('У вас нет доступа к этому проекту', 403);
+            }
+
+            // Проверка на право редактирования
+            $canEdit = ProjectRightsService::hasPermissionEditProject($user, $project);
+
+            // Получаем все папки и страницы верхнего уровня
+            $topLevelFolders = Folder::where('project_id', $projectId)
+                ->whereNull('parent_id')
+                ->get();
+
+            $topLevelPages = Page::where('project_id', $projectId)
+                ->whereNull('folder_id')
+                ->get();
+
+            // Рекурсивное построение структуры
+            $buildFolderStructure = function (Folder $folder) use (&$buildFolderStructure, $canEdit) {
+                $items = [];
+
+                foreach ($folder->pages as $page) {
+                    $pageData = $page->toArray();
+                    $pageData['type'] = 'page';
+                    $pageData['edit'] = $canEdit;
+                    $items[] = $pageData;
+                }
+
+                foreach ($folder->children as $subFolder) {
+                    $folderData = $subFolder->toArray();
+                    $folderData['type'] = 'folder';
+                    $folderData['edit'] = $canEdit;
+                    $folderData['items'] = $buildFolderStructure($subFolder);
+                    $items[] = $folderData;
+                }
+
+                return $items;
+            };
+
+            $result = [];
+
+            foreach ($topLevelFolders as $folder) {
+                $folderData = $folder->toArray();
+                $folderData['type'] = 'folder';
+                $folderData['edit'] = $canEdit;
+                $folderData['items'] = $buildFolderStructure($folder);
+                $result[] = $folderData;
+            }
+
+            foreach ($topLevelPages as $page) {
                 $pageData = $page->toArray();
                 $pageData['type'] = 'page';
-                $items[] = $pageData;
+                $pageData['edit'] = $canEdit;
+                $result[] = $pageData;
             }
 
-            // Добавляем вложенные папки
-            $subFolders = $folder->children;
-            foreach ($subFolders as $subFolder) {
-
-                $folderData = $subFolder->toArray();
-
-                $folderData['type'] = 'folder';
-
-                $folderData['items'] = $buildFolderStructure($subFolder);
-
-                $items[] = $folderData;
-            }
-
-            return $items;
-        };
-
-        // Собираем итоговый результат
-        $result = [];
-
-        // Добавляем верхние папки
-        foreach ($topLevelFolders as $folder) {
-            $folderData = $folder->toArray();
-            $folderData['type'] = 'folder';
-            $folderData['items'] = $buildFolderStructure($folder);
-
-            $result[] = $folderData;
+            return $this->sendResponse($result);
         }
-
-        // Добавляем верхние страницы
-        foreach ($topLevelPages as $page) {
-
-            $pageData = $page->toArray();
-            $pageData['type'] = 'page';
-
-            $result[] = $pageData;
-        }
-
-        return $this->sendResponse($result);
-    }
 
     /**
      * Создать новый элемент (страницу или папку) в проекте.

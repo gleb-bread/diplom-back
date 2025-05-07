@@ -97,6 +97,7 @@ class PageController extends Controller
         $data = $request->validate([
             'id' => 'required|integer',
             'page_id' => 'required|integer|exists:pages,id',
+            'component_id' => 'required|integer',
             'type' => 'required|string'
         ]);
 

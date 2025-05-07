@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use App\Models\Project;
 use App\Models\Page;
 use App\Models\TextComponent;
+use App\Http\Controllers\ProjectRightsController;
+use App\Enums\ProjectRightEnum;
 
 class RegisterController extends Controller
 {
@@ -50,7 +52,7 @@ class RegisterController extends Controller
 
     private function createFirstProject(User $user)
     {
-        return Project::create([
+        $project = Project::create([
             'name' => 'Проект 1',
             'user_id' => $user->id,
             'private' => true, 
@@ -60,6 +62,10 @@ class RegisterController extends Controller
             'logo' => null, 
             'type' => null, 
         ]);
+
+        ProjectRightsController::createRightAtProject($user, $project, ProjectRightEnum::Admin);
+
+        return $project;
     }
 
     private function createFirstPage(Project $project)
